@@ -201,12 +201,16 @@ add_library(libslic3r_gui STATIC
     ${LIBDIR}/slic3r/GUI/2DBed.hpp
     ${LIBDIR}/slic3r/GUI/wxExtensions.cpp
     ${LIBDIR}/slic3r/GUI/wxExtensions.hpp
+    ${LIBDIR}/slic3r/GUI/ConfigWizard.cpp
+    ${LIBDIR}/slic3r/GUI/ConfigWizard.hpp
     ${LIBDIR}/slic3r/Utils/Http.cpp
     ${LIBDIR}/slic3r/Utils/Http.hpp
     ${LIBDIR}/slic3r/Utils/OctoPrint.cpp
     ${LIBDIR}/slic3r/Utils/OctoPrint.hpp
     ${LIBDIR}/slic3r/Utils/Bonjour.cpp
     ${LIBDIR}/slic3r/Utils/Bonjour.hpp
+    ${LIBDIR}/slic3r/Utils/PresetUpdate.cpp
+    ${LIBDIR}/slic3r/Utils/PresetUpdate.hpp
 )
 
 add_library(admesh STATIC
@@ -231,12 +235,12 @@ add_library(miniz STATIC
     ${LIBDIR}/miniz/miniz_zip.cpp
 )
 
-add_library(clipper STATIC 
+add_library(clipper STATIC
     ${LIBDIR}/clipper.cpp
     ${LIBDIR}/clipper.hpp
 )
 
-add_library(polypartition STATIC 
+add_library(polypartition STATIC
     ${LIBDIR}/polypartition.cpp
     ${LIBDIR}/polypartition.h
 )
@@ -332,6 +336,7 @@ set(XS_XSP_FILES
     ${XSP_DIR}/GUI_3DScene.xsp
     ${XSP_DIR}/GUI_Preset.xsp
     ${XSP_DIR}/GUI_Tab.xsp
+    # ${XSP_DIR}/GUI_ConfigWizard.xsp    # TODO: remove the file
     ${XSP_DIR}/Layer.xsp
     ${XSP_DIR}/Line.xsp
     ${XSP_DIR}/Model.xsp
@@ -347,6 +352,7 @@ set(XS_XSP_FILES
     ${XSP_DIR}/SurfaceCollection.xsp
     ${XSP_DIR}/TriangleMesh.xsp
     ${XSP_DIR}/Utils_OctoPrint.xsp
+    ${XSP_DIR}/Utils_PresetUpdate.xsp
     ${XSP_DIR}/XS.xsp
 )
 foreach (file ${XS_XSP_FILES})

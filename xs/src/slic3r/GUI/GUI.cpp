@@ -44,6 +44,7 @@
 #include "TabIface.hpp"
 #include "AppConfig.hpp"
 #include "Utils.hpp"
+#include "ConfigWizard.hpp"
 #include "Preferences.hpp"
 
 namespace Slic3r { namespace GUI {
@@ -186,6 +187,15 @@ void set_main_frame(wxFrame *main_frame)
 {
     g_wxMainFrame = main_frame;
 }
+
+// wxFrame* get_main_frame()
+// {
+// 	if (g_wxMainFrame == nullptr) {
+// 		throw std::runtime_error("Main frame not set (yet)");
+// 	}
+
+// 	return g_wxMainFrame;
+// }
 
 void set_tab_panel(wxNotebook *tab_panel)
 {
@@ -338,6 +348,20 @@ void add_debug_menu(wxMenuBar *menu, int event_language_change)
 	});
 	menu->Append(local_menu, _(L("&Localization")));
 //#endif
+}
+
+void open_config_wizard()
+{
+	if (g_wxMainFrame == nullptr) {
+		throw std::runtime_error("Main frame not set");
+	}
+
+	// auto *wizard = new ConfigWizard(static_cast<wxWindow*>(g_wxMainFrame));    // FIXME: lifetime
+
+	// wizard->run();
+	ConfigWizard::run(g_wxMainFrame);
+
+	// show_info(g_wxMainFrame, "After wizard", "After wizard");
 }
 
 void open_preferences_dialog(int event_preferences)
