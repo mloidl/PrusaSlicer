@@ -73,6 +73,8 @@ our $grey = Wx::Colour->new(200,200,200);
 our $LANGUAGE_CHANGE_EVENT  = Wx::NewEventType;
 # 2) To inform about a change of Preferences.
 our $PREFERENCES_EVENT      = Wx::NewEventType;
+# To inform AppConfig about Slic3r version available online
+our $VERSION_ONLINE_EVENT   = Wx::NewEventType;
 
 sub OnInit {
     my ($self) = @_;
@@ -91,6 +93,8 @@ sub OnInit {
     $self->{notifier} = Slic3r::GUI::Notifier->new;
     $self->{app_config} = Slic3r::GUI::AppConfig->new;
     $self->{preset_bundle} = Slic3r::GUI::PresetBundle->new;
+    # $self->{preset_updater} = Slic3r::PresetUpdater->new($self->{app_config}, $self->{preset_bundle});
+    $self->{preset_updater} = Slic3r::PresetUpdater->new($VERSION_ONLINE_EVENT);
 
     # just checking for existence of Slic3r::data_dir is not enough: it may be an empty directory
     # supplied as argument to --datadir; in that case we should still run the wizard
@@ -105,7 +109,7 @@ sub OnInit {
     $self->{app_config}->set('version', $Slic3r::VERSION);
     $self->{app_config}->save;
 
-    my $slic3r_update_avail = $self->{app_config}->get("version_check") && $self->{app_config}->get("version_online") != $Slic3r::VERSION;
+    my $slic3r_update = $self->{app_config}->get('version_check') && $self->{app_config}->get('version_online') ne $Slic3r::VERSION;
 
     Slic3r::GUI::set_app_config($self->{app_config});
     Slic3r::GUI::load_language();
@@ -142,7 +146,7 @@ sub OnInit {
     # On OSX the UI was not initialized correctly if the wizard was called
     # before the UI was up and running.
     $self->CallAfter(sub {
-        if ($slic3r_update_avail) {
+        if ($slic3r_update) {
             # TODO
         } elsif ($run_wizard) {
             # Run the config wizard, don't offer the "reset user profile" checkbox.
@@ -150,7 +154,12 @@ sub OnInit {
         }
 
         # XXX: recreate_GUI ???
-        Slic3r::PresetUpdater::download($self->{app_config}, $self->{preset_bundle});
+        # Slic3r::PresetUpdater::download($self->{app_config}, $self->{preset_bundle});
+        # Slic3r::PresetUpdater::download($self->{preset_bundle});
+        # $self->{preset_updater}->download_bundles();
+        # $self->{preset_updater}->get_slic3r_version($VERSION_ONLINE_EVENT);
+        # $self->{preset_updater}->download_bundles($self->{preset_bundle});
+        $self->{preset_updater}->download($self->{preset_bundle});
     });
 
     # The following event is emited by the C++ menu implementation of application language change.
@@ -161,6 +170,15 @@ sub OnInit {
     # The following event is emited by the C++ menu implementation of preferences change.
     EVT_COMMAND($self, -1, $PREFERENCES_EVENT, sub{
         $self->update_ui_from_settings;
+    });
+
+    # The following event is emited by PresetUpdater (C++)
+    EVT_COMMAND($self, -1, $VERSION_ONLINE_EVENT, sub{
+        my ($self, $event) = @_;
+        my $version = $event->GetString;
+        print STDERR "VERSION_ONLINE_EVENT: " . $version . "\n";   # XXX
+        $self->{app_config}->set('version_online', $version);
+        $self->{app_config}->save;
     });
 
     return 1;

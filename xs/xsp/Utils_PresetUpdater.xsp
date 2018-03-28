@@ -2,11 +2,12 @@
 
 %{
 #include <xsinit.h>
-#include "slic3r/Utils/PresetUpdate.hpp"
+#include "slic3r/Utils/PresetUpdater.hpp"
 %}
 
 %name{Slic3r::PresetUpdater} class PresetUpdater {
-    static void download(PresetBundle *preset_bundle);
+    PresetUpdater(int version_online_event);
+    void download(PresetBundle* preset_bundle);
 };
 
 
