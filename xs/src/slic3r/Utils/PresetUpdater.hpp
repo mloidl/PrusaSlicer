@@ -12,14 +12,13 @@ class PresetBundle;
 class PresetUpdater
 {
 public:
-	PresetUpdater(int version_online_event);
+	PresetUpdater(int version_online_event, AppConfig *app_config);
 	PresetUpdater(PresetUpdater &&) = delete;
 	PresetUpdater(const PresetUpdater &) = delete;
 	PresetUpdater &operator=(PresetUpdater &&) = delete;
 	PresetUpdater &operator=(const PresetUpdater &) = delete;
 	~PresetUpdater();
 
-	// void get_slic3r_version(int event);
 	void download(PresetBundle *preset_bundle);
 private:
 	struct priv;
@@ -27,13 +26,5 @@ private:
 };
 
 
-// TODO: Remove
-namespace Utils {
-
-void preset_update_check();
-
 }
-
-}
-
 #endif

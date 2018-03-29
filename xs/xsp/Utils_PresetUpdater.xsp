@@ -6,14 +6,6 @@
 %}
 
 %name{Slic3r::PresetUpdater} class PresetUpdater {
-    PresetUpdater(int version_online_event);
+    PresetUpdater(int version_online_event, AppConfig *app_config);
     void download(PresetBundle* preset_bundle);
 };
-
-
-# TODO: remove:
-
-%package{Slic3r::Utils};
-
-void preset_update_check()
-    %code%{ Slic3r::Utils::preset_update_check(); %};

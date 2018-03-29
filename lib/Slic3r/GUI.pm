@@ -93,8 +93,6 @@ sub OnInit {
     $self->{notifier} = Slic3r::GUI::Notifier->new;
     $self->{app_config} = Slic3r::GUI::AppConfig->new;
     $self->{preset_bundle} = Slic3r::GUI::PresetBundle->new;
-    # $self->{preset_updater} = Slic3r::PresetUpdater->new($self->{app_config}, $self->{preset_bundle});
-    $self->{preset_updater} = Slic3r::PresetUpdater->new($VERSION_ONLINE_EVENT);
 
     # just checking for existence of Slic3r::data_dir is not enough: it may be an empty directory
     # supplied as argument to --datadir; in that case we should still run the wizard
@@ -109,7 +107,9 @@ sub OnInit {
     $self->{app_config}->set('version', $Slic3r::VERSION);
     $self->{app_config}->save;
 
-    my $slic3r_update = $self->{app_config}->get('version_check') && $self->{app_config}->get('version_online') ne $Slic3r::VERSION;
+    # my $version_check = $self->{app_config}->get('version_check');
+    $self->{preset_updater} = Slic3r::PresetUpdater->new($VERSION_ONLINE_EVENT, $self->{app_config});
+    my $slic3r_update = $self->{app_config}->slic3r_update_avail;
 
     Slic3r::GUI::set_app_config($self->{app_config});
     Slic3r::GUI::load_language();
@@ -146,19 +146,17 @@ sub OnInit {
     # On OSX the UI was not initialized correctly if the wizard was called
     # before the UI was up and running.
     $self->CallAfter(sub {
+        # XXX: recreate_GUI ???
+        
         if ($slic3r_update) {
             # TODO
-        } elsif ($run_wizard) {
+        }
+        # XXX: ?
+        if ($run_wizard) {
             # Run the config wizard, don't offer the "reset user profile" checkbox.
             $self->{mainframe}->config_wizard(1);
         }
 
-        # XXX: recreate_GUI ???
-        # Slic3r::PresetUpdater::download($self->{app_config}, $self->{preset_bundle});
-        # Slic3r::PresetUpdater::download($self->{preset_bundle});
-        # $self->{preset_updater}->download_bundles();
-        # $self->{preset_updater}->get_slic3r_version($VERSION_ONLINE_EVENT);
-        # $self->{preset_updater}->download_bundles($self->{preset_bundle});
         $self->{preset_updater}->download($self->{preset_bundle});
     });
 
@@ -173,10 +171,9 @@ sub OnInit {
     });
 
     # The following event is emited by PresetUpdater (C++)
-    EVT_COMMAND($self, -1, $VERSION_ONLINE_EVENT, sub{
+    EVT_COMMAND($self, -1, $VERSION_ONLINE_EVENT, sub {
         my ($self, $event) = @_;
         my $version = $event->GetString;
-        print STDERR "VERSION_ONLINE_EVENT: " . $version . "\n";   # XXX
         $self->{app_config}->set('version_online', $version);
         $self->{app_config}->save;
     });

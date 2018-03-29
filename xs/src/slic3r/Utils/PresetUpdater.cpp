@@ -29,33 +29,32 @@ enum {
 
 struct PresetUpdater::priv
 {
-	// AppConfig *app_config;
-	// PresetBundle *bundle;
 	int version_online_event;
+	bool version_check;
+	bool preset_update;
+
 	fs::path cache_path;
 	bool cancel;
 	std::thread thread;
 
 	priv(int event);
 
-	// void get_slic3r_version(int event) const;
 	void download(const std::set<VendorProfile> vendors) const;
 };
 
 PresetUpdater::priv::priv(int event) :
 	version_online_event(event),
+	version_check(false),
+	preset_update(false),
 	cache_path(fs::path(Slic3r::data_dir()) / "cache"),
 	cancel(false)
 {}
 
-// void PresetUpdater::priv::get_slic3r_version(int event) const
-// {
-// 	// TODO
-// }
-
 void PresetUpdater::priv::download(const std::set<VendorProfile> vendors) const
 {
 	std::cerr << "PresetUpdater::priv::download()" << std::endl;
+
+	if (!version_check) { return; }
 
 	// Download current Slic3r version
 	Http::get(SLIC3R_VERSION_URL)
@@ -72,10 +71,10 @@ void PresetUpdater::priv::download(const std::set<VendorProfile> vendors) const
 		})
 		.perform_sync();
 
+	if (!preset_update) { return; }
+
 	// Donwload vendor preset bundles
-	// std::cerr << "Bundle vendors: " << bundle->vendors.size() << std::endl;
 	std::cerr << "Bundle vendors: " << vendors.size() << std::endl;
-	// for (const auto &vendor : bundle->vendors) {
 	for (const auto &vendor : vendors) {
 		std::cerr << "vendor: " << vendor.name << std::endl;
 		std::cerr << "  URL: " << vendor.config_update_url << std::endl;
@@ -101,12 +100,12 @@ void PresetUpdater::priv::download(const std::set<VendorProfile> vendors) const
 	}
 }
 
-// PresetUpdater::PresetUpdater(AppConfig *app_config, PresetBundle *preset_bundle) :
-PresetUpdater::PresetUpdater(int version_online_event) :
+PresetUpdater::PresetUpdater(int version_online_event, AppConfig *app_config) :
 	p(new priv(version_online_event))
 {
-	// p->app_config = app_config;
-	// p->bundle = preset_bundle;
+	p->preset_update = app_config->get("preset_update") == "1";
+	// preset_update implies version_check:
+	p->version_check = p->preset_update || app_config->get("version_check") == "1";
 }
 
 
@@ -119,26 +118,6 @@ PresetUpdater::~PresetUpdater()
 		p->thread.join();
 	}
 }
-
-// void PresetUpdater::download(PresetBundle *preset_bundle)
-// {
-// 	std::cerr << "PresetUpdater::download()" << std::endl;
-
-// 	auto self = std::make_shared<PresetUpdater>(preset_bundle);
-// 	auto thread = std::thread([self](){
-// 		self->p->download();
-// 	});
-// 	self->p->thread = std::move(thread);
-// }
-
-// void PresetUpdater::get_slic3r_version(int event)
-// {
-// 	std::cerr << "PresetUpdater::get_slic3r_version()" << std::endl;
-
-// 	p->thread = std::move(std::thread([this, event]() {
-// 		this->p->get_slic3r_version(event);
-// 	}));
-// }
 
 void PresetUpdater::download(PresetBundle *preset_bundle)
 {
@@ -154,21 +133,5 @@ void PresetUpdater::download(PresetBundle *preset_bundle)
 	}));
 }
 
-
-// TODO: remove
-namespace Utils {
-
-void preset_update_check()
-{
-	std::cerr << "preset_update_check()" << std::endl;
-
-	// TODO:
-	// 1. Get a version tag or the whole bundle from the web
-	// 2. Store into temporary location (?)
-	// 3. ???
-	// 4. Profit!
-}
-
-}
 
 }
