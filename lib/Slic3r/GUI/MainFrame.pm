@@ -702,8 +702,8 @@ sub config_wizard {
 
 
     # TODO: Offer "reset user profile"
-    Slic3r::GUI::open_config_wizard();
-    return;
+    # Slic3r::GUI::open_config_wizard();
+    # return;
 
     # Enumerate the profiles bundled with the Slic3r installation under resources/profiles.
     my $directory = Slic3r::resources_dir() . "/profiles";

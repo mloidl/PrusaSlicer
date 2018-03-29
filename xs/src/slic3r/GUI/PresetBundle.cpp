@@ -4,6 +4,7 @@
 #include "PresetBundle.hpp"
 #include "BitmapCache.hpp"
 
+#include <iostream>    // XXX
 #include <algorithm>
 #include <fstream>
 #include <boost/filesystem.hpp>
@@ -105,7 +106,7 @@ void PresetBundle::setup_directories()
     std::initializer_list<boost::filesystem::path> paths = { 
         data_dir,
 		data_dir / "vendor",
-        data_dir / "cache",
+        data_dir / "cache",      // TODO: rename as vendor-cache? (Check usage elsewhere!)
 #ifdef SLIC3R_PROFILE_USE_PRESETS_SUBDIR
         // Store the print/filament/printer presets into a "presets" directory.
         data_dir / "presets", 
@@ -200,8 +201,12 @@ static inline std::string remove_ini_suffix(const std::string &name)
 // If the "vendor" section is missing, enable all models and variants of the particular vendor.
 void PresetBundle::load_installed_printers(const AppConfig &config)
 {
-    // TODO
-    // m_storage
+    std::cerr << "load_installed_printers()" << std::endl;
+
+    for (auto &preset : printers) {
+        std::cerr << "preset: printer: " << preset.name << std::endl;
+        preset.set_visible_from_appconfig(config);
+    }
 }
 
 // Load selections (current print, current filaments, current printer) from config.ini
@@ -221,6 +226,10 @@ void PresetBundle::load_selections(const AppConfig &config)
             break;
         this->set_filament_preset(i, remove_ini_suffix(config.get("presets", name)));
     }
+
+    // Update visibility of presets based on application vendor / model / variant configuration.
+    this->load_installed_printers(config);
+
     // Update visibility of presets based on their compatibility with the active printer.
     // Always try to select a compatible print and filament preset to the current printer preset,
     // as the application may have been closed with an active "external" preset, which does not
