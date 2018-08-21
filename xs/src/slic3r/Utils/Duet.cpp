@@ -224,13 +224,15 @@ std::string Duet::get_base_url() const
 
 std::string Duet::timestamp_str() const
 {
-	enum { BUFFER_SIZE = 32 };
+	enum { BUFFER_SIZE = 32, TIME_BUFFER_SIZE = 20 };
 
 	auto t = std::time(nullptr);
 	auto tm = *std::localtime(&t);
 
+	char time_str[TIME_BUFFER_SIZE];
 	char buffer[BUFFER_SIZE];
-	std::strftime(buffer, BUFFER_SIZE, "%Y-%d-%mT%H:%M:%S", &tm);
+	std::strftime(time_str, TIME_BUFFER_SIZE, "%Y-%d-%mT%H:%M:%S", &tm);
+	std::snprintf(buffer, BUFFER_SIZE, "time=%s", time_str);
 
 	return std::string(buffer);
 }
