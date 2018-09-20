@@ -23,9 +23,11 @@ public:
 	wxString get_test_ok_msg () const;
 	wxString get_test_failed_msg (wxString &msg) const;
 	// Send gcode file to duet, filename is expected to be in UTF-8
-	bool send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print) const;
+	bool send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print, bool simulate) const;
 	bool has_auto_discovery() const;
 	bool can_test() const;
+	bool can_start_print() const;
+	bool can_simulate_print() const;
 private:
 	std::string host;
 	std::string password;
@@ -37,6 +39,7 @@ private:
 	bool connect(wxString &msg) const;
 	void disconnect() const;
 	bool start_print(wxString &msg, const std::string &filename) const;
+	bool simulate_print(wxString &msg, const std::string &filename) const;
 	int get_err_code_from_body(const std::string &body) const;
 	static wxString format_error(const std::string &body, const std::string &error, unsigned status);
 };

@@ -6,11 +6,12 @@
 %}
 
 %name{Slic3r::GUI::PrintHostSendDialog} class PrintHostSendDialog_perl {
-    PrintHostSendDialog_perl(std::string path);
+    PrintHostSendDialog_perl(std::string path, bool can_start_print, bool can_simulate_print);
     ~PrintHostSendDialog_perl();
 
     std::string remote_path() const;
     bool print() const;
+    bool simulate() const;
 
     int ShowModal();
 };

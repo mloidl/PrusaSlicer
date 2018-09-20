@@ -6,7 +6,9 @@
 %}
 
 %name{Slic3r::PrintHost} class PrintHost {
-	bool send_gcode(std::string sourcepath, std::string remotepath, bool print) const;
+	bool send_gcode(std::string sourcepath, std::string remotepath, bool print, bool simulate) const;
+	bool can_start_print() const;
+	bool can_simulate_print() const;
 
 	static PrintHost* get_print_host(DynamicPrintConfig *config);
 };

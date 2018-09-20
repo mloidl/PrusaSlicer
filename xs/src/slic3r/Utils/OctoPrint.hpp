@@ -23,9 +23,11 @@ public:
 	wxString get_test_ok_msg () const;
 	wxString get_test_failed_msg (wxString &msg) const;
 	// Send gcode file to octoprint, filename is expected to be in UTF-8
-	bool send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print) const;
+	bool send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print, bool simulate) const;
 	bool has_auto_discovery() const;
 	bool can_test() const;
+	bool can_start_print() const;
+	bool can_simulate_print() const;
 private:
 	std::string host;
 	std::string apikey;

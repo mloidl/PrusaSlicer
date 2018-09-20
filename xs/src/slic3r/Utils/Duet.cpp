@@ -46,7 +46,7 @@ wxString Duet::get_test_failed_msg (wxString &msg) const
 	return wxString::Format("%s: %s", _(L("Could not connect to Duet")), msg);
 }
 
-bool Duet::send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print) const
+bool Duet::send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print, bool simulate) const
 {
 	enum { PROGRESS_RANGE = 1000 };
 
@@ -68,10 +68,11 @@ bool Duet::send_gcode(const std::string &sourcepath, const std::string &remotepa
 	bool res = true;
 
 	auto upload_cmd = get_upload_url(remotepath);
-	BOOST_LOG_TRIVIAL(info) << boost::format("Duet: Uploading file %1% as %2%, print: %4%, command: %5%")
+	BOOST_LOG_TRIVIAL(info) << boost::format("Duet: Uploading file %1% as %2%, print: %4%, simulate %5%, command: %6%")
 		% sourcepath
 		% remotepath
 		% print
+		% simulate
 		% upload_cmd;
 
 	auto http = Http::post(std::move(upload_cmd));
@@ -88,6 +89,12 @@ bool Duet::send_gcode(const std::string &sourcepath, const std::string &remotepa
 			} else if (print) {
 				wxString errormsg;
 				res = start_print(errormsg, remotepath);
+				if (!res) {
+					GUI::show_error(&progress_dialog, std::move(errormsg));
+				}
+			} else if (simulate) {
+				wxString errormsg;
+				res = simulate_print(errormsg, remotepath);
 				if (!res) {
 					GUI::show_error(&progress_dialog, std::move(errormsg));
 				}
@@ -123,6 +130,16 @@ bool Duet::has_auto_discovery() const
 }
 
 bool Duet::can_test() const
+{
+	return true;
+}
+
+bool Duet::can_start_print() const
+{
+	return true;
+}
+
+bool Duet::can_simulate_print() const
 {
 	return true;
 }
@@ -238,6 +255,28 @@ bool Duet::start_print(wxString &msg, const std::string &filename) const
 	auto http = Http::get(std::move(url));
 	http.on_error([&](std::string body, std::string error, unsigned status) {
 			BOOST_LOG_TRIVIAL(error) << boost::format("Duet: Error starting print: %1%, HTTP %2%, body: `%3%`") % error % status % body;
+			msg = format_error(body, error, status);
+		})
+		.on_complete([&](std::string body, unsigned) {
+			BOOST_LOG_TRIVIAL(debug) << boost::format("Duet: Got: %1%") % body;
+			res = true;
+		})
+		.perform_sync();
+
+	return res;
+}
+
+bool Duet::simulate_print(wxString &msg, const std::string &filename) const 
+{
+	bool res = false;
+	
+	auto url = (boost::format("%1%rr_gcode?gcode=M37%%20P\"%2%\"")
+			% get_base_url()
+			% Http::url_encode(filename)).str();
+
+	auto http = Http::get(std::move(url));
+	http.on_error([&](std::string body, std::string error, unsigned status) {
+			BOOST_LOG_TRIVIAL(error) << boost::format("Duet: Error simulating print: %1%, HTTP %2%, body: `%3%`") % error % status % body;
 			msg = format_error(body, error, status);
 		})
 		.on_complete([&](std::string body, unsigned) {

@@ -20,13 +20,14 @@ private:
 	std::unique_ptr<PrintHostSendDialog> dialog;
 
 public:
-	PrintHostSendDialog_perl(std::string path);
+	PrintHostSendDialog_perl(std::string path, bool can_start_print, bool can_simulate_print);
 	~PrintHostSendDialog_perl();
 
 	int ShowModal();
 
 	std::string remote_path() const;                // returns path in utf-8
 	bool print() const;                             // whether printing should be started
+	bool simulate() const;							// whether simulation should be started
 };
 
 }

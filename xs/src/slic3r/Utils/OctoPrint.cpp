@@ -59,7 +59,7 @@ wxString OctoPrint::get_test_failed_msg (wxString &msg) const
 						_(L("Could not connect to OctoPrint")), msg, _(L("Note: OctoPrint version at least 1.1.0 is required.")));
 }
 
-bool OctoPrint::send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print) const
+bool OctoPrint::send_gcode(const std::string &sourcepath, const std::string &remotepath, bool print, bool simulate) const
 {
 	enum { PROGRESS_RANGE = 1000 };
 
@@ -132,6 +132,16 @@ bool OctoPrint::has_auto_discovery() const
 bool OctoPrint::can_test() const
 {
 	return true;
+}
+
+bool OctoPrint::can_start_print() const
+{
+	return true;
+}
+
+bool OctoPrint::can_simulate_print() const
+{
+	return false;
 }
 
 void OctoPrint::set_auth(Http &http) const

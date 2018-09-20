@@ -1494,11 +1494,13 @@ sub export_gcode {
         $dlg->Destroy;
     }
 
-    my $dialog = Slic3r::GUI::PrintHostSendDialog->new($self->{export_gcode_output_file});
+    my $host = Slic3r::PrintHost::get_print_host($self->{config});
+    my $dialog = Slic3r::GUI::PrintHostSendDialog->new($self->{export_gcode_output_file}, $host->can_start_print(), $host->can_simulate_print());
     if ($dialog->ShowModal == wxID_OK) {
         $self->{send_gcode_file} = $self->{export_gcode_output_file};
         $self->{send_gcode_target} = $dialog->remote_path;
         $self->{send_gcode_print} = $dialog->print;
+        $self->{send_gcode_simulate} = $dialog->simulate;
     }
     
     $self->statusbar->StartBusy;
@@ -1628,7 +1630,7 @@ sub on_export_completed {
     if ($send_gcode) {
         my $host = Slic3r::PrintHost::get_print_host($self->{config});
 
-        if ($host->send_gcode($self->{send_gcode_file}, $self->{send_gcode_target}, $self->{send_gcode_print})) {
+        if ($host->send_gcode($self->{send_gcode_file}, $self->{send_gcode_target}, $self->{send_gcode_print}, $self->{send_gcode_simulate})) {
             $self->statusbar->SetStatusText(L("Upload to host finished."));
         } else {
             $self->statusbar->SetStatusText("");
